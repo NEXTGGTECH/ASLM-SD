@@ -1,9 +1,9 @@
 {
     "fileVersion": 1,
-    "id": "aslm-nodejs-example",
-    "name": "Example Node.js Module",
-    "description": "Reference ASLM Node.js module: Express WebView UI, typed settings (getExec/setExec), downloads bridge (stdio JSON), host theme/locale snapshots, module interop HTTP client, and host-managed nodejs-runtime venv.",
-    "version": "1.0.0.5",
+    "id": "aslm-sd",
+    "name": "ASLM SD",
+    "description": "ASLM SD Module",
+    "version": "0.0.0.0",
     "author": "NEXTGGTECH",
     "type": "ui",
     "category": [
@@ -14,7 +14,7 @@
     "sidebarIcon": "sidebar_icon.png",
     "source": {
         "type": "github",
-        "repo": "NEXTGGTECH/ASLM-NodeJS-Example-Module"
+        "repo": "NEXTGGTECH/ASLM-SD"
     },
     "update": {
         "mode": "release",
