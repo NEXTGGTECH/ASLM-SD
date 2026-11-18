@@ -7,80 +7,16 @@ const path = require("path");
 const BASE_DIR = path.resolve(__dirname);
 const DEFAULT_PORT = 20200;
 
-// Lazy Express application — holds the Express request handler once loaded.
-class LazyExpressApplication {
-    constructor() {
-        this._handler = null;
-        this._error = null;
-        this._loading = false;
-    }
-
-    // Start loading the Express app asynchronously after the port is bound.
-    loadInBackground() {
-        if (this._loading) return;
-        this._loading = true;
-        setImmediate(() => {
-            try {
-                const { createApp } = require("./App/app");
-                this._handler = createApp();
-            } catch (err) {
-                this._error = err;
-                console.error("[ASLM-Example] Failed to load Express app:", err);
-            }
-        });
-    }
-
-    // Return an http.RequestListener suitable for http.createServer().
-    get requestListener() {
-        return (req, res) => {
-            if (this._handler) {
-                return this._handler(req, res);
-            }
-
-            if (this._error) {
-                const body = Buffer.from(
-                    `ASLM-Example failed to start: ${this._error}`,
-                    "utf8"
-                );
-                res.writeHead(500, {
-                    "Content-Type": "text/plain; charset=utf-8",
-                    "Content-Length": String(body.length),
-                });
-                res.end(body);
-                return;
-            }
-
-            // Still loading — auto-refresh so WebView retries.
-            const body = Buffer.from(
-                '<!doctype html><html><head><meta charset="utf-8">' +
-                '<meta http-equiv="refresh" content="1">' +
-                "<title>Example Node.js Module starting</title></head>" +
-                '<body style="font-family:Segoe UI,sans-serif;background:#111;color:#eee;">' +
-                "Example Node.js Module is starting\u2026" +
-                "</body></html>",
-                "utf8"
-            );
-            res.writeHead(503, {
-                "Content-Type": "text/html; charset=utf-8",
-                "Content-Length": String(body.length),
-                "Retry-After": "1",
-            });
-            res.end(body);
-        };
-    }
-}
-
-// Bind port immediately; load Express on the next event loop tick.
+// Prepare Express before opening its listening socket.
 function cmdRunserver(port, log) {
     if (log) {
         console.log(`[ASLM-Example] Starting server on port ${port}...`);
     }
 
-    const lazyApp = new LazyExpressApplication();
-    const server = http.createServer(lazyApp.requestListener);
+    const { createApp } = require("./App/app");
+    const server = http.createServer(createApp());
 
     server.listen(port, "127.0.0.1", () => {
-        lazyApp.loadInBackground();
         if (log) {
             console.log(
                 `[ASLM-Example] UI server listening at http://127.0.0.1:${port}/`
