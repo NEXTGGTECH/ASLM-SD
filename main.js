@@ -16,17 +16,21 @@ function cmdRunserver(port, log) {
     const { createApp } = require("./App/app");
     const server = http.createServer(createApp());
 
-    server.listen(port, "127.0.0.1", () => {
-        if (log) {
-            console.log(
-                `[ASLM-Example] UI server listening at http://127.0.0.1:${port}/`
-            );
-        }
+    // Capture the original route before Express can rewrite it or finish the response.
+    server.prependListener("request", (request, response) => {
+        const requestPath = request.url.split("?", 1)[0];
+        response.once("finish", () => {
+            console.log(`${request.method} ${requestPath} ${response.statusCode}`);
+        });
     });
 
     server.on("error", (err) => {
         console.error("[ASLM-Example] Server error:", err);
-        process.exit(1);
+        process.exitCode = 1;
+    });
+
+    server.listen(port, "127.0.0.1", () => {
+        console.log(`[ASLM-Example] UI server listening at http://127.0.0.1:${server.address().port}/`);
     });
 }
 
